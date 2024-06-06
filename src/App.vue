@@ -1,27 +1,33 @@
 <template>
   <v-app class="pa-2">
-    <Layout :user="user"/>
+    <Layout :user="user" />
     <v-main>
       <v-container fluid>
-        <p>{{ data?.fqdn }}</p>
-        <MySwitch v-model="verbose" />
-        <v-row>
-          <v-col cols="12" md="8">
-            <AuthInfo :expiresAt="data.expires_at" class="mb-4" />
-            <Events :events="data.events" class="mb-4" />
-            <StateFlags :flags="data?.state_flags?.flags" class="mb-4" />
-          </v-col>
-          <v-col cols="12" md="4">
-            <Owner :owner="data.owner" class="mb-4" />
-            <AdministrativeContacts :contacts="data.administrative_contacts" class="mb-4" />
-            <NsSet :nsset="data.nsset" class="mb-4" />
-            <KeySet :keyset="data.keyset" class="mb-4" />
-          </v-col>
-        </v-row>
+        <div v-if="loading" class="d-flex justify-center align-center">
+          <v-progress-circular indeterminate color="primary"/>
+        </div>
+        <template v-else>
+          <p>{{ data?.fqdn }}</p>
+          <MySwitch v-model="verbose" />
+          <v-row>
+            <v-col cols="12" md="8">
+              <AuthInfo :expiresAt="data.expires_at" class="mb-4" />
+              <Events :events="data.events" class="mb-4" />
+              <StateFlags :flags="data?.state_flags?.flags" class="mb-4" />
+            </v-col>
+            <v-col cols="12" md="4">
+              <Owner :owner="data.owner" class="mb-4" />
+              <AdministrativeContacts :contacts="data.administrative_contacts" class="mb-4" />
+              <NsSet :nsset="data.nsset" class="mb-4" />
+              <KeySet :keyset="data.keyset" class="mb-4" />
+            </v-col>
+          </v-row>
+        </template>
       </v-container>
     </v-main>
   </v-app>
 </template>
+
 <script>
 import Layout from './layouts/Layout.vue'
 import MySwitch from './components/MySwitch.vue'
@@ -68,12 +74,17 @@ export default {
     return {
       data: {},
       user: { name: 'Jan Musílek' },
+      loading: true,
     }
   },
   mounted() {
-    axios.get('src/domain-detail.json').then(response => {
-      this.data = response.data
-    })
+    axios.get('src/domain-detail.json')
+      .then(response => {
+        this.data = response.data
+      })
+      .finally(() => {
+        this.loading = false
+      })
   }
 }
 </script>
